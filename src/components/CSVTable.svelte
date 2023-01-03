@@ -1,42 +1,77 @@
 <script lang="ts">
-    import { parseCSV } from "../helpers/parseCSV";
-    const sampleCsv = `qwer,asdf,asdf,asdf
-500,12,45,67
-1000,14.6,13.9,12`;
+    import { parseCSV } from '../helpers/parseCSV';
 
-    $: table = parseCSV(sampleCsv);
+    $: table = {
+        headings: [],
+        body: []
+    };
+    $: errorMessage = '';
+    $: tableLoading = false;
+    $: loadCSV = (input: HTMLInputElement) => {
+        let fileReader = new FileReader();
+        fileReader.readAsText(input?.target.files[0]);
+        errorMessage = '';
+        tableLoading = true;
+        fileReader.onload = () => {
+            table = parseCSV(fileReader.result as string);
+        };
+        fileReader.readyState === 1
+        fileReader.onerror = () => {
+            errorMessage = 'Logs did not load properly';
+            console.log('it no work');
+        }
+        fileReader.onloadend = () => {
+            tableLoading = false;
+        };
+    };
 
 </script>
 
+<div>
+    <form action="#">
+        <input
+            type="file"
+            accept="text/csv"
+            id="open-csv"
+            name="open-csv"
+            class="open-csv open-csv--input"
+            on:input={loadCSV}
+        />
+        <label for="open-csv" class="open-csv--label">Load CSV</label>
+    </form>
+</div>
 <div class="csv-table">
-    <table>
-        <thead>
-        <tr>
+    {#if errorMessage}
+        <p>{errorMessage}</p>
+    {/if}
+    {#if tableLoading}
+        <p>table is loading</p>
+    {:else}
+        {#if !table.headings.length}
+            <p>No table data</p>
+        {/if}
+        <table>
+            <thead>
             {#each table.headings as heading}
-                <td>{heading}</td>
+                {#if heading}
+                    <th scope="col">{heading}</th>
+                {/if}
             {/each}
-        </tr>
-        </thead>
-        <tbody>
-        {#each table.body as tableRow}
-            <tr>
-                {#each tableRow as tableRowItem}
-                    <td>{tableRowItem}</td>
-                {/each}
-            </tr>
-        {/each}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+            {#each table.body as tableRow}
+                <tr>
+                    {#each tableRow as tableRowItem}
+                        <td>{tableRowItem}</td>
+                    {/each}
+                </tr>
+            {/each}
+            </tbody>
+        </table>
+    {/if}
 </div>
 
 <style>
-    .counter {
-        display: flex;
-        border-top: 1px solid rgba(0, 0, 0, 0.1);
-        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        margin: 1rem 0;
-    }
-
     .counter button {
         width: 2em;
         padding: 0;
@@ -47,51 +82,5 @@
         background-color: transparent;
         touch-action: manipulation;
         font-size: 2rem;
-    }
-
-    .counter button:hover {
-        background-color: var(--color-bg-1);
-    }
-
-    svg {
-        width: 25%;
-        height: 25%;
-    }
-
-    path {
-        vector-effect: non-scaling-stroke;
-        stroke-width: 2px;
-        stroke: #444;
-    }
-
-    .counter-viewport {
-        width: 8em;
-        height: 4em;
-        overflow: hidden;
-        text-align: center;
-        position: relative;
-    }
-
-    .counter-viewport strong {
-        position: absolute;
-        display: flex;
-        width: 100%;
-        height: 100%;
-        font-weight: 400;
-        color: var(--color-theme-1);
-        font-size: 4rem;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .counter-digits {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-    }
-
-    .hidden {
-        top: -100%;
-        user-select: none;
     }
 </style>
