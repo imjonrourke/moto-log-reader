@@ -9,7 +9,7 @@ export const parseCSV: (csv: string) => CSVTable = (csv) => {
     const emptyIndices: { [key: string]: boolean } = {};
     const body = rows.slice(1).map((row) => {
         return row.split(",").filter((rowItem, index) => {
-            if (!rowItem) {
+            if (!rowItem && rowItem !== '0') {
                 emptyIndices[index] = true;
             }
             if (rowItem) {
