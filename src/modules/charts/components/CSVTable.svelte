@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { parseCSV } from '../helpers/parseCSV';
+  import {parseCSV, parseCSVToArrs} from '../helpers/parseCSV';
 
   let table = {
       headings: [],
       body: []
   };
+  let newTable = {};
   $: unselectedState = {};
   $: fileName = '';
   $: selectedHeadings = [];
@@ -35,8 +36,10 @@
       tableLoading = true;
       fileReader.onload = () => {
         table = parseCSV(fileReader.result as string);
-        selectedHeadings = table.headings;
-        selectedBody = table.body;
+        newTable = parseCSVToArrs(fileReader.result as string);
+        selectedHeadings = Object.keys(newTable);
+        // selectedHeadings = table.headings;
+        // selectedBody = table.body;
         fileName = inputFileName;
       };
       fileReader.readyState === 1
@@ -112,21 +115,40 @@
       </div>
       <div class="csv-content__table csv-table">
         <table>
-          <thead>
-          {#each selectedHeadings as heading}
-            <th scope="col">{heading}</th>
-          {/each}
-          </thead>
+<!--          <thead>-->
+<!--            {#each selectedHeadings as heading}-->
+<!--              <th scope="col">{heading}</th>-->
+<!--            {/each}-->
+<!--          </thead>-->
           <tbody>
-          {#each selectedBody as tableRow}
-            <tr>
-              {#each tableRow as tableRowItem}
-                <td>{tableRowItem}</td>
-              {/each}
-            </tr>
-          {/each}
+            {#each selectedHeadings as column}
+              {#if !!newTable[column].length}
+                <tr>
+                  <th scope="row">{column}</th>
+                  {#each newTable[column] as tableItem}
+                    <td>{tableItem}</td>
+                  {/each}
+                </tr>
+              {/if}
+            {/each}
           </tbody>
         </table>
+<!--        <table>-->
+<!--          <thead>-->
+<!--          {#each selectedHeadings as heading}-->
+<!--            <th scope="col">{heading}</th>-->
+<!--          {/each}-->
+<!--          </thead>-->
+<!--          <tbody>-->
+<!--          {#each selectedBody as tableRow}-->
+<!--            <tr>-->
+<!--              {#each tableRow as tableRowItem}-->
+<!--                <td>{tableRowItem}</td>-->
+<!--              {/each}-->
+<!--            </tr>-->
+<!--          {/each}-->
+<!--          </tbody>-->
+<!--        </table>-->
       </div>
     {/if}
   {/if}
