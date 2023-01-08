@@ -6,12 +6,17 @@
       body: []
   };
   let newTable = {};
+  let emptyState: { [key: string]: boolean } = {};
+  $: selectedState = {};
   $: unselectedState = {};
   $: fileName = '';
   $: selectedHeadings = [];
   $: selectedBody = [];
   $: errorMessage = '';
   $: tableLoading = false;
+  $: onNewSelectState = (heading: string) => {
+    selectedState[heading] = !selectedState[heading];
+  };
   $: onSelectState = (indices: number[]) => {
     indices.map((index) => unselectedState[index] = !unselectedState[index]);
     selectedHeadings = table.headings.filter((heading, index) => {
@@ -38,8 +43,13 @@
         table = parseCSV(fileReader.result as string);
         newTable = parseCSVToArrs(fileReader.result as string);
         selectedHeadings = Object.keys(newTable);
-        // selectedHeadings = table.headings;
-        // selectedBody = table.body;
+        selectedHeadings.forEach((heading) => {
+          if (newTable[heading].length) {
+            selectedState[heading] = true;
+          } else {
+            emptyState[heading] = true;
+          }
+        });
         fileName = inputFileName;
       };
       fileReader.readyState === 1
@@ -99,17 +109,35 @@
             />
             <label for="select-all-table">Select all</label>
           </li>
-          {#each table.headings as heading, i}
-            <li>
-              <input
+          {#each selectedHeadings as heading, i}
+            {#if !emptyState[heading]}
+              <li>
+                <input
                   id={heading}
                   name={heading}
                   type="checkbox"
-                  checked={unselectedState[i] ? "" : "checked"}
-                  on:change={() => onSelectState([i])}
-              />
-              <label for={heading}>{heading}</label>
-            </li>
+                  checked={selectedState[heading] ? "checked" : ""}
+                  on:change={() => onNewSelectState(heading)}
+                />
+                <label for={heading}>{heading}</label>
+              </li>
+            {/if}
+          {/each}
+        </ul>
+        <p>Empty cells</p>
+        <ul>
+          {#each selectedHeadings as heading}
+            {#if emptyState[heading]}
+              <li>
+                <input
+                    id={`${heading}Empty`}
+                    name={`${heading}Empty`}
+                    type="checkbox"
+                    disabled
+                />
+                <label for={`${heading}Empty`}>{heading}</label>
+              </li>
+            {/if}
           {/each}
         </ul>
       </div>
@@ -122,7 +150,7 @@
 <!--          </thead>-->
           <tbody>
             {#each selectedHeadings as column}
-              {#if !!newTable[column].length}
+              {#if selectedState[column]}
                 <tr>
                   <th scope="row">{column}</th>
                   {#each newTable[column] as tableItem}
