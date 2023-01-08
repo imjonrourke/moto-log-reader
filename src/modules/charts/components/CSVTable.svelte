@@ -1,10 +1,7 @@
 <script lang="ts">
-  import {parseCSV, parseCSVToArrs} from '../helpers/parseCSV';
+  import {parseCSVToArrs} from '../helpers/parseCSV';
+  import LineGraph from "./LineGraph.svelte";
 
-  let table = {
-      headings: [],
-      body: []
-  };
   let newTable = {};
   let emptyState: { [key: string]: boolean } = {};
   $: selectedState = {};
@@ -17,21 +14,6 @@
   $: onNewSelectState = (heading: string) => {
     selectedState[heading] = !selectedState[heading];
   };
-  $: onSelectState = (indices: number[]) => {
-    indices.map((index) => unselectedState[index] = !unselectedState[index]);
-    selectedHeadings = table.headings.filter((heading, index) => {
-      if (!unselectedState[index]) {
-        return heading;
-      }
-    })
-    selectedBody = table.body.map((body) => {
-      return body.filter((bodyRow, index) => {
-        if (!unselectedState[index]) {
-          return bodyRow;
-        }
-      })
-    });
-  };
   $: loadCSV = (input: HTMLInputElement) => {
     if (input?.target.files.length) {
       let fileReader = new FileReader();
@@ -40,7 +22,6 @@
       errorMessage = '';
       tableLoading = true;
       fileReader.onload = () => {
-        table = parseCSV(fileReader.result as string);
         newTable = parseCSVToArrs(fileReader.result as string);
         selectedHeadings = Object.keys(newTable);
         selectedHeadings.forEach((heading) => {
@@ -55,7 +36,6 @@
       fileReader.readyState === 1
       fileReader.onerror = () => {
         errorMessage = 'Logs did not load properly';
-        console.log('it no work');
         tableLoading = false;
       }
       fileReader.onloadend = () => {
@@ -92,7 +72,7 @@
       <p>loading table</p>
     </div>
   {:else}
-    {#if !table.headings.length}
+    {#if !selectedHeadings.length}
       <div class="csv-content__empty">
         <p>No table data</p>
       </div>
@@ -101,11 +81,10 @@
         <ul>
           <li>
             <input
-                id="select-all-table"
-                name="select-all-table"
-                type="checkbox"
-                checked={table.headings.length === selectedHeadings.length ? "checked" : ""}
-                on:change={() => onSelectState(table.headings.map((h, index) => index))}
+              id="select-all-table"
+              name="select-all-table"
+              type="checkbox"
+              checked={selectedHeadings.length === Object.keys(selectedState).length ? "checked" : ""}
             />
             <label for="select-all-table">Select all</label>
           </li>
@@ -143,50 +122,27 @@
       </div>
       <div class="csv-content__table csv-table">
         <table>
-<!--          <thead>-->
-<!--            {#each selectedHeadings as heading}-->
-<!--              <th scope="col">{heading}</th>-->
-<!--            {/each}-->
-<!--          </thead>-->
           <tbody>
-            {#each selectedHeadings as column}
-              {#if selectedState[column]}
-                <tr>
-                  <th scope="row">{column}</th>
-                  {#each newTable[column] as tableItem}
-                    <td>{tableItem}</td>
-                  {/each}
-                </tr>
-              {/if}
-            {/each}
+          {#each selectedHeadings as column}
+            {#if selectedState[column]}
+              <LineGraph
+                  title={column}
+                  data={newTable[column]}
+              />
+            {/if}
+          {/each}
           </tbody>
         </table>
-<!--        <table>-->
-<!--          <thead>-->
-<!--          {#each selectedHeadings as heading}-->
-<!--            <th scope="col">{heading}</th>-->
-<!--          {/each}-->
-<!--          </thead>-->
-<!--          <tbody>-->
-<!--          {#each selectedBody as tableRow}-->
-<!--            <tr>-->
-<!--              {#each tableRow as tableRowItem}-->
-<!--                <td>{tableRowItem}</td>-->
-<!--              {/each}-->
-<!--            </tr>-->
-<!--          {/each}-->
-<!--          </tbody>-->
-<!--        </table>-->
       </div>
     {/if}
   {/if}
 </div>
 
 <style>
-    :root {
-      --spacingBase: 8px;
-      --columnWidth: calc(100% / 12);
-    }
+  :root {
+    --spacingBase: 8px;
+    --columnWidth: calc(100% / 12);
+  }
   .csv-content {
     width: 100%;
     display: flex;
