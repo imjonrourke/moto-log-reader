@@ -1,8 +1,9 @@
 <script lang="ts">
-  import {parseCSVToArrs} from '../helpers/parseCSV';
-  import LineGraph from "./LineGraph.svelte";
+  import {parseCSVToArrs, parseCSVToD3Arr} from '../helpers/parseCSV';
+  import LineGraph from './LineGraph.svelte';
 
   let newTable = {};
+  let testTable = [];
   let emptyState: { [key: string]: boolean } = {};
   $: selectedState = {};
   $: unselectedState = {};
@@ -23,6 +24,8 @@
       tableLoading = true;
       fileReader.onload = () => {
         newTable = parseCSVToArrs(fileReader.result as string);
+        testTable = parseCSVToD3Arr(fileReader.result as string)
+        // console.log('test table', testTable);
         selectedHeadings = Object.keys(newTable);
         selectedHeadings.forEach((heading) => {
           if (newTable[heading].length) {
@@ -125,9 +128,17 @@
           <tbody>
           {#each selectedHeadings as column}
             {#if selectedState[column]}
+<!--              <LineGraph-->
+<!--                title={column}-->
+<!--                xAxis="LogEntrySeconds"-->
+<!--                yAxis={column}-->
+<!--                data={newTable[column]}-->
+<!--              />-->
               <LineGraph
-                  title={column}
-                  data={newTable[column]}
+                title={column}
+                xAxis="LogEntrySeconds"
+                yAxis={column}
+                data={testTable}
               />
             {/if}
           {/each}

@@ -1,3 +1,5 @@
+import {csvParse, autoType} from 'd3-dsv';
+
 type CSVTable = {
   headings: string[];
   body: string[][];
@@ -60,4 +62,16 @@ export const parseCSVToArrs: (csv: string) => CSVData = (csv) => {
     });
     return acc;
   }, {});
+};
+
+export const parseCSVToD3Arr: (csvData: string) => object[] = (csvData) => {
+  return csvParse(csvData, (d, _, col) => {
+    const rowData: typeof d = {};
+    col.forEach((colItem) => {
+      if (d[colItem] !== '') {
+        rowData[colItem] = d[colItem];
+      }
+    })
+    return autoType(rowData);
+  });
 };
