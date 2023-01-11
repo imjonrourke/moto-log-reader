@@ -10,7 +10,7 @@
     const child = LineChart(data, {
       width: 500,
       height: 300,
-      color: "steelblue",
+      color: "#ff3d00",
       x: d => d[xAxis],
       y: d => d[yAxis],
     });

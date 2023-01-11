@@ -42,6 +42,7 @@
 	header {
 		display: flex;
 		justify-content: space-between;
+		border-bottom: var(--border-size) solid var(--dark-blue);
 	}
 
 	.corner {
@@ -66,7 +67,6 @@
 	nav {
 		display: flex;
 		justify-content: center;
-		--background: rgba(255, 255, 255, 0.7);
 	}
 
 	svg {

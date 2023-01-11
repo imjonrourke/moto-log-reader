@@ -53,30 +53,32 @@
     <p>{fileName}</p>
   {/if}
   <form action="#">
-    <input
+    <div class="open-csv">
+      <input
         type="file"
         accept="text/csv"
         id="open-csv"
         name="open-csv"
-        class="open-csv open-csv--input"
+        class="open-csv__input"
         on:input={loadCSV}
-    />
-    <label for="open-csv" class="open-csv--label">Load CSV</label>
+      />
+    </div>
+    <label for="open-csv" class="open-csv__label">Load CSV</label>
   </form>
 </div>
 <div class="csv-content">
   {#if errorMessage}
-    <div class="csv-content__error">
+    <div class="csv-content__section csv-content__error">
       <p>{errorMessage}</p>
     </div>
   {/if}
   {#if tableLoading}
-    <div class="csv-content__loading">
+    <div class="csv-content__section csv-content__loading">
       <p>loading table</p>
     </div>
   {:else}
     {#if !selectedHeadings.length}
-      <div class="csv-content__empty">
+      <div class="csv-content__section csv-content__empty">
         <p>No table data</p>
       </div>
     {:else}
@@ -154,11 +156,23 @@
     --spacingBase: 8px;
     --columnWidth: calc(100% / 12);
   }
+  .open-csv__label {
+    display: block;
+    text-align: center;
+    color: var(--white);
+    border: var(--border-size) dashed var(--white);
+    padding: calc(var(--spacingBase) * 2);
+    border-radius: calc(var(--spacingBase) / 2);
+  }
   .csv-content {
     width: 100%;
     display: flex;
     align-items: flex-start;
     padding: 0 calc(var(--spacingBase) * 2);
+  }
+  .csv-content__section {
+    width: 100%;
+    text-align: center;
   }
   .csv-content__filters {
     width: calc(var(--columnWidth) * 3);
