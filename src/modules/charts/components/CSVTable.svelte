@@ -1,18 +1,17 @@
 <script lang="ts">
-  import {parseCSVToArrs, parseCSVToD3Arr} from '../helpers/parseCSV';
+  import {parseCSVToD3Arr} from '../helpers/parseCSV';
   import LineGraph from './LineGraph.svelte';
 
-  let newTable = {};
   let testTable = [];
   let emptyState: { [key: string]: boolean } = {};
   $: selectedState = {};
-  $: unselectedState = {};
+  $: isCellEmpty = (value) => !selectedState[value];
   $: fileName = '';
   $: selectedHeadings = [];
-  $: selectedBody = [];
+  $: emptyHeadings = [];
   $: errorMessage = '';
   $: tableLoading = false;
-  $: onNewSelectState = (heading: string) => {
+  $: onNewSelectCell = (heading: string) => {
     selectedState[heading] = !selectedState[heading];
   };
   $: loadCSV = (input: HTMLInputElement) => {
@@ -23,17 +22,13 @@
       errorMessage = '';
       tableLoading = true;
       fileReader.onload = () => {
-        newTable = parseCSVToArrs(fileReader.result as string);
-        testTable = parseCSVToD3Arr(fileReader.result as string)
-        // console.log('test table', testTable);
-        selectedHeadings = Object.keys(newTable);
-        selectedHeadings.forEach((heading) => {
-          if (newTable[heading].length) {
-            selectedState[heading] = true;
-          } else {
-            emptyState[heading] = true;
-          }
-        });
+        const { data, dataColumns, emptyColumns } = parseCSVToD3Arr(fileReader.result as string);
+        console.log('test table', emptyColumns);
+        testTable = data;
+        emptyState = emptyColumns;
+        selectedHeadings = Object.keys(dataColumns);
+        emptyHeadings = Object.keys(emptyColumns);
+        selectedState = dataColumns;
         fileName = inputFileName;
       };
       fileReader.readyState === 1
@@ -94,24 +89,22 @@
             <label for="select-all-table">Select all</label>
           </li>
           {#each selectedHeadings as heading, i}
-            {#if !emptyState[heading]}
-              <li>
-                <input
+            <li>
+              <input
                   id={heading}
                   name={heading}
                   type="checkbox"
-                  checked={selectedState[heading] ? "checked" : ""}
-                  on:change={() => onNewSelectState(heading)}
-                />
-                <label for={heading}>{heading}</label>
-              </li>
-            {/if}
+                  checked={!isCellEmpty(heading) ? "checked" : ""}
+                  on:change={() => onNewSelectCell(heading)}
+              />
+              <label for={heading}>{heading}</label>
+            </li>
           {/each}
         </ul>
         <p>Empty cells</p>
         <ul>
-          {#each selectedHeadings as heading}
-            {#if emptyState[heading]}
+          {#each emptyHeadings as heading}
+            {#if isCellEmpty(heading)}
               <li>
                 <input
                     id={`${heading}Empty`}
@@ -126,26 +119,22 @@
         </ul>
       </div>
       <div class="csv-content__table csv-table">
-        <table>
-          <tbody>
-          {#each selectedHeadings as column}
-            {#if selectedState[column]}
-<!--              <LineGraph-->
-<!--                title={column}-->
-<!--                xAxis="LogEntrySeconds"-->
-<!--                yAxis={column}-->
-<!--                data={newTable[column]}-->
-<!--              />-->
-              <LineGraph
-                title={column}
-                xAxis="LogEntrySeconds"
-                yAxis={column}
-                data={testTable}
-              />
-            {/if}
-          {/each}
-          </tbody>
-        </table>
+        {#each selectedHeadings as column}
+          {#if !isCellEmpty(column)}
+            <!--              <LineGraph-->
+            <!--                title={column}-->
+            <!--                xAxis="LogEntrySeconds"-->
+            <!--                yAxis={column}-->
+            <!--                data={newTable[column]}-->
+            <!--              />-->
+            <LineGraph
+              title={column}
+              xAxis="LogEntrySeconds"
+              yAxis={column}
+              data={testTable}
+            />
+          {/if}
+        {/each}
       </div>
     {/if}
   {/if}

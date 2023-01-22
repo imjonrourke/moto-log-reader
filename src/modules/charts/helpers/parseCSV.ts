@@ -64,14 +64,37 @@ export const parseCSVToArrs: (csv: string) => CSVData = (csv) => {
   }, {});
 };
 
-export const parseCSVToD3Arr: (csvData: string) => object[] = (csvData) => {
-  return csvParse(csvData, (d, _, col) => {
+type DataColumn = {
+  [key: string]: boolean;
+}
+
+interface ParseCSV {
+  data: object[],
+  columns: string[],
+  emptyColumns: DataColumn,
+  dataColumns: DataColumn,
+}
+
+export const parseCSVToD3Arr: (csvData: string) => ParseCSV = (csvData) => {
+  const emptyColumns: DataColumn = {}, dataColumns: DataColumn = {};
+  const data = csvParse(csvData, (d, _, col) => {
     const rowData: typeof d = {};
     col.forEach((colItem) => {
       if (d[colItem] !== '') {
         rowData[colItem] = d[colItem];
+        dataColumns[colItem] = true;
+      } else {
+        emptyColumns[colItem] = true;
       }
     })
     return autoType(rowData);
   });
+  const columns = data.columns;
+
+  return {
+    data,
+    columns,
+    emptyColumns,
+    dataColumns,
+  };
 };
