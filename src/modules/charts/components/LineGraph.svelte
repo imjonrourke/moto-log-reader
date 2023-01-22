@@ -2,31 +2,32 @@
   import {onMount} from 'svelte';
   import {LineChart} from '../../../graphs/LineChart';
   import {CHART_HEIGHT, CHART_WIDTH} from "../constants";
+  import type {ChartSettings} from "../types/Charts";
+  export let settings: ChartSettings = {
+    xAxis: '',
+    yAxis: '',
+    lineColor: '',
+    name: '',
+  };
   export let data = [];
-  export let title = '';
-  export let xAxis = '';
-  export let yAxis = '';
-  export let color = '';
+  export let width, height;
+  $: finalWidth = width ?? CHART_WIDTH;
+  $: finalHeight = height ?? CHART_HEIGHT;
   let chart;
-  let finalColor = color || "#ff3d00";
+  let finalColor = settings.lineColor || "#ff3d00";
+  console.log('client width', finalWidth);
   onMount(() => {
     const child = LineChart(data, {
-      width: CHART_WIDTH,
-      height: CHART_HEIGHT,
+      width: finalWidth,
+      height: finalHeight,
       color: finalColor,
-      x: d => d[xAxis],
-      y: d => d[yAxis],
+      x: d => d[settings.xAxis],
+      y: d => d[settings.yAxis],
     });
     chart.appendChild(child);
   })
 </script>
 
-<p><strong>{title}</strong></p>
+<p><strong>{settings.name}</strong></p>
 <div bind:this={chart} />
-<!--<tr>-->
-<!--  <th scope="row">{title}</th>-->
-<!--  {#each data as item}-->
-<!--    <td>{item}</td>-->
-<!--  {/each}-->
-<!--</tr>-->
 <style></style>

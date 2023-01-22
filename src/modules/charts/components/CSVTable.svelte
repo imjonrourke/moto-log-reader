@@ -3,19 +3,20 @@
   import LineGraph from './LineGraph.svelte';
   import Chart from "../helpers/TableHelper";
 
-  let testTable = [];
+  let chartData = [];
   let emptyState: { [key: string]: boolean } = {};
   const globalSettings = Chart.createBaseChart({
     xAxis: 'LogEntrySeconds',
   });
+  let emptyHeadings = [];
+  let clientWidth;
   $: selectedState = {};
   $: isCellEmpty = (value) => !selectedState[value]?.enabled;
   $: fileName = '';
   $: selectedHeadings = [];
-  $: emptyHeadings = [];
   $: errorMessage = '';
   $: tableLoading = false;
-  $: onNewSelectCell = (heading: string) => {
+  $: onSelectCell = (heading: string) => {
     selectedState[heading].enabled = !selectedState[heading].enabled;
   };
   $: loadCSV = (input: HTMLInputElement) => {
@@ -27,7 +28,7 @@
       tableLoading = true;
       fileReader.onload = () => {
         const { data, dataColumns, emptyColumns } = parseCSVToD3Arr(fileReader.result as string);
-        testTable = data;
+        chartData = data;
         emptyState = emptyColumns;
         selectedHeadings = Object.keys(dataColumns);
         emptyHeadings = Object.keys(emptyColumns);
@@ -40,7 +41,7 @@
           };
           return acc;
         }, {});
-        console.log('test table', selectedState);
+        // console.log('test table', selectedState);
         fileName = inputFileName;
       };
       fileReader.readyState === 1
@@ -73,89 +74,91 @@
     <label for="open-csv" class="open-csv__label">Load CSV</label>
   </form>
 </div>
-<div class="csv-content">
-  {#if errorMessage}
-    <div class="csv-content__section csv-content__error">
-      <p>{errorMessage}</p>
-    </div>
-  {/if}
-  {#if tableLoading}
-    <div class="csv-content__section csv-content__loading">
-      <p>loading table</p>
+{#if errorMessage}
+  <div class="csv-state">
+    <p>{errorMessage}</p>
+  </div>
+{/if}
+{#if tableLoading}
+  <div class="csv-state">
+    <p>loading charts</p>
+  </div>
+{:else}
+  {#if !selectedHeadings.length}
+    <div class="csv-state csv-content__empty">
+      <p>No table data</p>
     </div>
   {:else}
-    {#if !selectedHeadings.length}
-      <div class="csv-content__section csv-content__empty">
-        <p>No table data</p>
-      </div>
-    {:else}
-      <div class="csv-content__filters">
-        <ul>
-          <li>
-            <input
-              id="select-all-table"
-              name="select-all-table"
-              type="checkbox"
-              checked={selectedHeadings.length === Object.keys(selectedState).length ? "checked" : ""}
-            />
-            <label for="select-all-table">Select all</label>
-          </li>
-          {#each selectedHeadings as heading, i}
+    <div class="csv-content">
+      {#if !selectedHeadings.length}
+        <div class="csv-content__section csv-content__empty">
+          <p>No table data</p>
+        </div>
+      {:else}
+        <div class="csv-content__filters">
+          <ul class="csv-content__filters__ul">
             <li>
               <input
-                  id={heading}
-                  name={heading}
-                  type="checkbox"
-                  checked={!isCellEmpty(heading) ? "checked" : ""}
-                  on:change={() => onNewSelectCell(heading)}
+                id="select-all-table"
+                name="select-all-table"
+                type="checkbox"
+                checked={selectedHeadings.length === Object.keys(selectedState).length ? "checked" : ""}
               />
-              <label for={heading}>{heading}</label>
+              <label for="select-all-table">Select all</label>
             </li>
-          {/each}
-        </ul>
-        <p>Empty cells</p>
-        <ul>
-          {#each emptyHeadings as heading}
-            {#if isCellEmpty(heading)}
+            {#each selectedHeadings as heading, i}
               <li>
                 <input
-                    id={`${heading}Empty`}
-                    name={`${heading}Empty`}
+                    id={heading}
+                    name={heading}
                     type="checkbox"
-                    disabled
+                    checked={!isCellEmpty(heading) ? "checked" : ""}
+                    on:change={() => onSelectCell(heading)}
                 />
-                <label for={`${heading}Empty`}>{heading}</label>
+                <label for={heading}>{heading}</label>
               </li>
+            {/each}
+          </ul>
+          <p>Empty cells</p>
+          <ul class="csv-content__filters__ul">
+            {#each emptyHeadings as heading}
+              {#if isCellEmpty(heading)}
+                <li>
+                  <input
+                      id={`${heading}Empty`}
+                      name={`${heading}Empty`}
+                      type="checkbox"
+                      disabled
+                  />
+                  <label for={`${heading}Empty`}>{heading}</label>
+                </li>
+              {/if}
+            {/each}
+          </ul>
+        </div>
+        <div class="csv-content__charts" bind:clientWidth={clientWidth}>
+          {#each selectedHeadings as column}
+            {#if !isCellEmpty(column)}
+              <LineGraph
+                settings={selectedState[column]}
+                data={chartData}
+                width={clientWidth}
+              />
             {/if}
           {/each}
-        </ul>
-      </div>
-      <div class="csv-content__table csv-table">
-        {#each selectedHeadings as column}
-          {#if !isCellEmpty(column)}
-            <!--              <LineGraph-->
-            <!--                title={column}-->
-            <!--                xAxis="LogEntrySeconds"-->
-            <!--                yAxis={column}-->
-            <!--                data={newTable[column]}-->
-            <!--              />-->
-            <LineGraph
-              title={column}
-              xAxis={globalSettings.xAxis}
-              yAxis={column}
-              data={testTable}
-            />
-          {/if}
-        {/each}
-      </div>
-    {/if}
+        </div>
+      {/if}
+    </div>
   {/if}
-</div>
+{/if}
 
 <style>
   :root {
     --spacingBase: 8px;
     --columnWidth: calc(100% / 12);
+  }
+  .open-csv__input {
+    opacity: 0;
   }
   .open-csv__label {
     display: block;
@@ -165,21 +168,52 @@
     padding: calc(var(--spacingBase) * 2);
     border-radius: calc(var(--spacingBase) / 2);
   }
+  .csv-state {
+    /*width: 100%;*/
+    /*display: flex;*/
+    /*align-items: center;*/
+    text-align: center;
+  }
   .csv-content {
     width: 100%;
-    display: flex;
-    align-items: flex-start;
+    /*display: flex;*/
+    /*align-items: flex-start;*/
     padding: 0 calc(var(--spacingBase) * 2);
+    display: grid;
+    grid-template-columns: 20% 80%;
   }
   .csv-content__section {
     width: 100%;
+    display: flex;
+    align-items: center;
     text-align: center;
   }
-  .csv-content__filters {
-    width: calc(var(--columnWidth) * 3);
+  .csv-content__filters__ul {
+    padding: 0;
+    list-style: none;
   }
-  .csv-content__table {
-    width: calc(var(--columnWidth) * 10);
-    overflow-x: scroll;
+  .csv-content__filters__ul li {
+    display: flex;
+    align-items: flex-start;
   }
+  .csv-content__filters__ul > li {
+    padding: 0;
+    list-style: none;
+  }
+  .csv-content__filters__ul label {
+    width: 100%;
+  }
+  .csv-content__filters__ul label:hover {
+    cursor: pointer;
+  }
+  .csv-content__filters__ul > li:hover {
+    background: var(--light-blue);
+  }
+  /*.csv-content__filters {*/
+  /*  width: calc(var(--columnWidth) * 3);*/
+  /*}*/
+  /*.csv-content__charts {*/
+  /*  width: calc(var(--columnWidth) * 10);*/
+  /*  overflow-x: scroll;*/
+  /*}*/
 </style>
