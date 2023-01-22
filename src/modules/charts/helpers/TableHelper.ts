@@ -1,11 +1,17 @@
-import type {ChartSettings} from "../types/Charts";
+import type {BaseChartSettings, ChartSettings} from "../types/Charts";
 
 export interface Chart {
-  createChart: (data: any[], settings: ChartSettings) => ChartSettings;
+  createBaseChart: (settings: BaseChartSettings) => BaseChartSettings;
+  createChart: (settings: ChartSettings) => ChartSettings;
 }
 
 export const Chart: Chart = {
-  createChart: (data, settings) => {
+  createBaseChart: (settings) => {
+    return {
+      xAxis: settings.xAxis,
+    };
+  },
+  createChart: (settings) => {
     return {
       name: settings.name,
       xAxis: settings.xAxis,

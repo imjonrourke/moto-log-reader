@@ -1,18 +1,22 @@
 <script lang="ts">
   import {parseCSVToD3Arr} from '../helpers/parseCSV';
   import LineGraph from './LineGraph.svelte';
+  import Chart from "../helpers/TableHelper";
 
   let testTable = [];
   let emptyState: { [key: string]: boolean } = {};
+  const globalSettings = Chart.createBaseChart({
+    xAxis: 'LogEntrySeconds',
+  });
   $: selectedState = {};
-  $: isCellEmpty = (value) => !selectedState[value];
+  $: isCellEmpty = (value) => !selectedState[value]?.enabled;
   $: fileName = '';
   $: selectedHeadings = [];
   $: emptyHeadings = [];
   $: errorMessage = '';
   $: tableLoading = false;
   $: onNewSelectCell = (heading: string) => {
-    selectedState[heading] = !selectedState[heading];
+    selectedState[heading].enabled = !selectedState[heading].enabled;
   };
   $: loadCSV = (input: HTMLInputElement) => {
     if (input?.target.files.length) {
@@ -23,12 +27,20 @@
       tableLoading = true;
       fileReader.onload = () => {
         const { data, dataColumns, emptyColumns } = parseCSVToD3Arr(fileReader.result as string);
-        console.log('test table', emptyColumns);
         testTable = data;
         emptyState = emptyColumns;
         selectedHeadings = Object.keys(dataColumns);
         emptyHeadings = Object.keys(emptyColumns);
-        selectedState = dataColumns;
+        selectedState = Object.keys(dataColumns).reduce((acc, col) => {
+          acc[col] = {
+            enabled: dataColumns[col],
+            name: col,
+            xAxis: globalSettings.xAxis,
+            yAxis: col,
+          };
+          return acc;
+        }, {});
+        console.log('test table', selectedState);
         fileName = inputFileName;
       };
       fileReader.readyState === 1
@@ -129,7 +141,7 @@
             <!--              />-->
             <LineGraph
               title={column}
-              xAxis="LogEntrySeconds"
+              xAxis={globalSettings.xAxis}
               yAxis={column}
               data={testTable}
             />
