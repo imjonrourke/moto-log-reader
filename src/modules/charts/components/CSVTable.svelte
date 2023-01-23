@@ -56,24 +56,30 @@
   };
 </script>
 
-<div>
-  {#if fileName}
-    <p>{fileName}</p>
-  {/if}
-  <form action="#">
-    <div class="open-csv">
-      <input
-        type="file"
-        accept="text/csv"
-        id="open-csv"
-        name="open-csv"
-        class="open-csv__input"
-        on:input={loadCSV}
-      />
+<div class={`csv-subheading ${fileName && 'csv-subheading--loaded'}`}>
+  <p>Evo X</p>
+  <div class={`csv-load ${fileName && 'csv-load--loaded'}`}>
+    {#if fileName}
+      <p>{fileName}</p>
+    {/if}
+    <div class="csv-load__input">
+      <form action="#">
+        <div class="open-csv">
+          <input
+            type="file"
+            accept="text/csv"
+            id="open-csv"
+            name="open-csv"
+            class="open-csv__input"
+            on:input={loadCSV}
+          />
+        </div>
+        <label for="open-csv" class="open-csv__label">Load CSV</label>
+      </form>
     </div>
-    <label for="open-csv" class="open-csv__label">Load CSV</label>
-  </form>
+  </div>
 </div>
+
 {#if errorMessage}
   <div class="csv-state">
     <p>{errorMessage}</p>
@@ -157,8 +163,32 @@
     --spacingBase: 8px;
     --columnWidth: calc(100% / 12);
   }
+  .csv-subheading {
+    width: 100%;
+    padding: var(--spacingBase) 1rem;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .csv-subheading--loaded {
+    border-bottom: var(--border-size) solid var(--light-blue);
+  }
+  .csv-subheading.csv-subheading--loaded {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  .csv-load {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .csv-load--loaded p {
+    margin: 0 calc(var(--spacingBase) * 2) 0 0;
+  }
   .open-csv__input {
-    opacity: 0;
+    display: none;
   }
   .open-csv__label {
     display: block;
@@ -176,9 +206,8 @@
   }
   .csv-content {
     width: 100%;
-    /*display: flex;*/
-    /*align-items: flex-start;*/
     padding: 0 calc(var(--spacingBase) * 2);
+    box-sizing: border-box;
     display: grid;
     grid-template-columns: 20% 80%;
   }
@@ -202,6 +231,7 @@
   }
   .csv-content__filters__ul label {
     width: 100%;
+    padding: var(--spacingBase);
   }
   .csv-content__filters__ul label:hover {
     cursor: pointer;
@@ -212,8 +242,9 @@
   /*.csv-content__filters {*/
   /*  width: calc(var(--columnWidth) * 3);*/
   /*}*/
-  /*.csv-content__charts {*/
-  /*  width: calc(var(--columnWidth) * 10);*/
-  /*  overflow-x: scroll;*/
-  /*}*/
+  .csv-content__charts {
+    /*width: calc(var(--columnWidth) * 10);*/
+    /*overflow-x: scroll;*/
+    padding: 0 0 0 calc(var(--spacingBase) * 2);
+  }
 </style>

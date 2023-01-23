@@ -1,5 +1,6 @@
 <script lang="ts">
-  import {onMount} from 'svelte';
+  import {beforeUpdate} from 'svelte';
+  import {select} from 'd3';
   import {LineChart} from '../../../graphs/LineChart';
   import {CHART_HEIGHT, CHART_WIDTH} from "../constants";
   import type {ChartSettings} from "../types/Charts";
@@ -11,20 +12,26 @@
   };
   export let data = [];
   export let width, height;
-  $: finalWidth = width ?? CHART_WIDTH;
-  $: finalHeight = height ?? CHART_HEIGHT;
+  $: clientWidth = CHART_WIDTH;
+  $: clientHeight = CHART_HEIGHT;
   let chart;
+  let lineChart;
   let finalColor = settings.lineColor || "#ff3d00";
-  console.log('client width', finalWidth);
-  onMount(() => {
-    const child = LineChart(data, {
-      width: finalWidth,
-      height: finalHeight,
+  beforeUpdate(() => {
+    clientWidth = width || CHART_WIDTH;
+    clientHeight = height || CHART_HEIGHT;
+    lineChart = LineChart(data, {
+      width: clientWidth,
+      height: clientHeight,
       color: finalColor,
       x: d => d[settings.xAxis],
       y: d => d[settings.yAxis],
+      // z: d => d[settings.yAxis],
     });
-    chart.appendChild(child);
+    if (chart) {
+      select(chart).select('svg').remove();
+      chart.appendChild(lineChart);
+    }
   })
 </script>
 
