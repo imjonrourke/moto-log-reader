@@ -33,13 +33,21 @@
 
 .body--light {
   --background: var(--white);
+  --background--disabled: rgba(0, 0, 0, 0.1);
   --color-text: var(--color-text);
+  --input--success: var(--orange);
+  --input--disabled: grey;
+  --input--border-color: grey;
 }
 
 .body--dark {
   --background: var(--dark-color);
+  --background--disabled: rgba(255, 255, 255, 0.1);
   --color-text: var(--white);
   --color-theme-1: var(--orange);
+  --input--success: var(--orange);
+  --input--disabled: grey;
+  --input--border-color: grey;
 }
 
 body {
