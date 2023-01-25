@@ -1,6 +1,7 @@
 <script lang="ts">
   import {parseCSVToD3Arr} from '../helpers/parseCSV';
   import LineGraph from './LineGraph.svelte';
+  import Checkbox from '../../core/components/Checkbox.svelte';
   import Chart from "../helpers/TableHelper";
 
   let chartData = [];
@@ -104,24 +105,25 @@
         <div class="csv-content__filters">
           <ul class="csv-content__filters__ul">
             <li>
-              <input
-                id="select-all-table"
-                name="select-all-table"
-                type="checkbox"
-                checked={selectedHeadings.length === Object.keys(selectedState).length ? "checked" : ""}
-              />
-              <label for="select-all-table">Select all</label>
+              <Checkbox
+                  value="select-all"
+                  checked={
+                    selectedHeadings.length === Object.keys(selectedState).length ? "checked" : ""
+                  }
+                  onChange={() => onSelectCell()}
+              >
+                Select all
+              </Checkbox>
             </li>
             {#each selectedHeadings as heading, i}
               <li>
-                <input
-                    id={heading}
-                    name={heading}
-                    type="checkbox"
-                    checked={!isCellEmpty(heading) ? "checked" : ""}
-                    on:change={() => onSelectCell(heading)}
-                />
-                <label for={heading}>{heading}</label>
+                <Checkbox
+                  value={heading}
+                  checked={!isCellEmpty(heading) ? "checked" : ""}
+                  onChange={() => onSelectCell(heading)}
+                >
+                  {heading}
+                </Checkbox>
               </li>
             {/each}
           </ul>
@@ -130,13 +132,12 @@
             {#each emptyHeadings as heading}
               {#if isCellEmpty(heading)}
                 <li>
-                  <input
-                      id={`${heading}Empty`}
-                      name={`${heading}Empty`}
-                      type="checkbox"
+                  <Checkbox
+                      value={`${heading}Empty`}
                       disabled
-                  />
-                  <label for={`${heading}Empty`}>{heading}</label>
+                  >
+                    {heading}
+                  </Checkbox>
                 </li>
               {/if}
             {/each}
@@ -199,14 +200,10 @@
     border-radius: calc(var(--spacingBase) / 2);
   }
   .csv-state {
-    /*width: 100%;*/
-    /*display: flex;*/
-    /*align-items: center;*/
     text-align: center;
   }
   .csv-content {
     width: 100%;
-    /*padding: 0 calc(var(--spacingBase) * 2);*/
     padding: 0 var(--spacingBase);
     box-sizing: border-box;
     display: grid;
@@ -231,10 +228,6 @@
     padding: 0;
     list-style: none;
   }
-  .csv-content__filters__ul li {
-    display: flex;
-    align-items: flex-start;
-  }
   .csv-content__filters__ul > li {
     padding: 0;
     list-style: none;
@@ -248,13 +241,5 @@
   }
   .csv-content__filters__ul > li:hover {
     background: var(--light-blue);
-  }
-  /*.csv-content__filters {*/
-  /*  width: calc(var(--columnWidth) * 3);*/
-  /*}*/
-  .csv-content__charts {
-    /*width: calc(var(--columnWidth) * 10);*/
-    /*overflow-x: scroll;*/
-    /*padding: 0 0 0 calc(var(--spacingBase) * 2);*/
   }
 </style>
