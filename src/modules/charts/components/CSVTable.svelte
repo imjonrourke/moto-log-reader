@@ -12,15 +12,29 @@
   let emptyHeadings = [];
   let clientWidth;
   $: selectedState = {};
-  $: isCellEmpty = (value) => !selectedState[value]?.enabled;
   $: fileName = '';
   $: selectedHeadings = [];
   $: errorMessage = '';
   $: tableLoading = false;
-  $: onSelectCell = (heading: string) => {
+  $: isSelectAll = Object.keys(selectedState)
+    .filter((state) => selectedState[state].enabled).length === selectedHeadings.length;
+  $: isCellEmpty = (value) => !selectedState[value]?.enabled;
+  const onSelectCell = (heading: string) => {
     selectedState[heading].enabled = !selectedState[heading].enabled;
   };
-  $: loadCSV = (input: HTMLInputElement) => {
+  const setSelectAll = (val) => {
+    Object.keys(selectedState).forEach((heading) => {
+      selectedState[heading].enabled = val;
+    });
+  };
+  const onSelectAll = () => {
+    let enabled = true;
+    if (isSelectAll) {
+      enabled = false;
+    }
+    setSelectAll(enabled);
+  };
+  const loadCSV = (input: HTMLInputElement) => {
     if (input?.target.files.length) {
       let fileReader = new FileReader();
       let inputFileName = input.target.files[0].name;
@@ -103,14 +117,13 @@
         </div>
       {:else}
         <div class="csv-content__filters">
-          <ul class="csv-content__filters__ul">
+          <p>Filter cells</p>
+          <ul class="csv-content__filters__ul csv-content__filters__ul--data">
             <li>
               <Checkbox
                   value="select-all"
-                  checked={
-                    selectedHeadings.length === Object.keys(selectedState).length ? "checked" : ""
-                  }
-                  onChange={() => onSelectCell()}
+                  checked={isSelectAll ? "checked" : ""}
+                  onChange={onSelectAll}
               >
                 Select all
               </Checkbox>
@@ -128,7 +141,7 @@
             {/each}
           </ul>
           <p>Empty cells</p>
-          <ul class="csv-content__filters__ul">
+          <ul class="csv-content__filters__ul csv-content__filters__ul--empty">
             {#each emptyHeadings as heading}
               {#if isCellEmpty(heading)}
                 <li>
@@ -159,7 +172,7 @@
   {/if}
 {/if}
 
-<style>
+<style lang="scss">
   :root {
     --spacingBase: 8px;
     --columnWidth: calc(100% / 12);
@@ -184,10 +197,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    &--loaded {
+      p {
+        margin: 0 calc(var(--spacingBase) * 2) 0 0;
+      }
+    }
   }
-  .csv-load--loaded p {
-    margin: 0 calc(var(--spacingBase) * 2) 0 0;
-  }
+
   .open-csv__input {
     display: none;
   }
@@ -208,38 +224,44 @@
     box-sizing: border-box;
     display: grid;
     grid-template-columns: 20% 80%;
+    & > * {
+      padding: 0 var(--spacingBase);
+      &:first-child {
+        margin-left: calc(var(--spacingBase) * -1);
+      }
+      &:last-child {
+        margin-right: calc(var(--spacingBase) * -1);
+      }
+    }
+    &__section {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      text-align: center;
+    }
   }
-  .csv-content > * {
-    padding: 0 var(--spacingBase);
-  }
-  .csv-content > *:first-child {
-    margin-left: calc(var(--spacingBase) * -1);
-  }
-  .csv-content > *:last-child {
-    margin-right: calc(var(--spacingBase) * -1);
-  }
-  .csv-content__section {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    text-align: center;
-  }
+
   .csv-content__filters__ul {
     padding: 0;
     list-style: none;
-  }
-  .csv-content__filters__ul > li {
-    padding: 0;
-    list-style: none;
-  }
-  .csv-content__filters__ul label {
-    width: 100%;
-    padding: var(--spacingBase);
-  }
-  .csv-content__filters__ul label:hover {
-    cursor: pointer;
-  }
-  .csv-content__filters__ul > li:hover {
-    background: var(--light-blue);
+    > li {
+      &:hover {
+        background: var(--light-blue);
+      }
+    }
+    &--empty {
+      > li {
+        &:hover {
+          background: none;
+        }
+      }
+    }
+    & label {
+      width: 100%;
+      padding: var(--spacingBase);
+      &:hover {
+        cursor: pointer;
+      }
+    }
   }
 </style>
