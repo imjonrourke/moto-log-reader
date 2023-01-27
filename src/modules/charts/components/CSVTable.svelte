@@ -239,28 +239,33 @@
       align-items: center;
       text-align: center;
     }
-  }
+    &__filters {
+      &__ul {
+        padding: 0;
+        list-style: none;
 
-  .csv-content__filters__ul {
-    padding: 0;
-    list-style: none;
-    > li {
-      &:hover {
-        background: var(--light-blue);
-      }
-    }
-    &--empty {
-      > li {
-        &:hover {
-          background: none;
+        > li {
+          &:hover {
+            background: var(--light-blue);
+          }
         }
-      }
-    }
-    & label {
-      width: 100%;
-      padding: var(--spacingBase);
-      &:hover {
-        cursor: pointer;
+
+        &--empty {
+          > li {
+            &:hover {
+              background: none;
+            }
+          }
+        }
+
+        & label {
+          width: 100%;
+          padding: var(--spacingBase);
+
+          &:hover {
+            cursor: pointer;
+          }
+        }
       }
     }
   }

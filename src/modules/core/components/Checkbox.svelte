@@ -40,12 +40,13 @@
   .check {
     position: relative;
     background: white;
-    border: calc(var(--border-size) * 2) solid var(--input--border-color);
+    //border: var(--border-size) solid var(--input--border-color);
+    box-shadow: 0 0 0 var(--border-size) var(--input--border-color);
     margin: {
       right: var(--spacingBase);
     }
     input:checked + label & {
-      border-color: var(--input--success);
+      box-shadow: 0 0 0 var(--border-size) var(--input--success);
       transition-delay: 0s;
     }
     input:disabled + label & {
@@ -66,16 +67,38 @@
       right: 0;
       bottom: 0;
       z-index: 10;
-      //margin: calc(var(--border-size) * -4) calc(var(--border-size) * -2);
       clip-path: polygon(0 0, 50% 0, 100% 0, 100% 100%, 50% 100%, 0 100%);
-      transition-property: background-color, clip-path, border-color, transform;
-      transition-delay: 0.1s, 0s;
-      transform: scale(1) translate(-2px, -2px);
+      transition-property: background-color, clip-path, box-shadow, transform;
+      transform: scale(1);
       input:checked + label &, input:checked + label & {
         transition-delay: 0s;
         border-color: transparent;
-        clip-path: polygon(0 0, 100% 0, 100% 32.5%, 37.5% 32.5%, 37.5% 70%, 0 70%);
-        transform: scale(0.6) scaleY(-1) rotate(45deg) translate(1px, 8px);
+        box-shadow: none;
+        //clip-path: polygon(
+        //                0 30%,
+        //                100% 30%,
+        //                100% 62.5%,
+        //                37.5% 62.5%,
+        //                37.5% 100%,
+        //                0 100%
+        //);
+        clip-path: polygon(
+        0 15%,
+        100% 15%,
+        100% 47.5%,
+        37.5% 47.5%,
+        37.5% 85%,
+        0 85%
+        );
+        //clip-path: polygon(
+        //  0 0,
+        //  100% 0,
+        //  100% 32.5%,
+        //  37.5% 32.5%,
+        //  37.5% 70%,
+        //  0 70%
+        //);
+        transform: scale(0.6) scaleY(-1) rotate(45deg);
         transform-origin: center;
       }
       input:checked + label & {
